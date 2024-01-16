@@ -10,7 +10,7 @@ router.get("/", (req, res) => {
 
 // matches POST requests sent to /api/users/create
 router.post("/dogcat", (req, res) => {
-  VertexModelController.predictDogCat(req.body, res);
+  VertexModelController.predictDogCat(req, res);
 });
 
 module.exports = router;
