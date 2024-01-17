@@ -1,4 +1,5 @@
 const predictionService = require("../services/predictionService");
+const fs = require('fs');
 
 // returns list of all available models
 const getAvailableModels = (res) => {
@@ -24,7 +25,7 @@ const predictDogCat = async (req, res) => {
     try {
         // this should be req.file once we start getting the actual raw image
         // for the moment we are just handling an already processed image
-        const raw_image = req.body
+        const raw_image = fs.readFileSync(req.file.path);
         const prepared_image = await predictionService.prepareImage(raw_image);
         const model_endpoint = "https://australia-southeast1-aiplatform.googleapis.com/v1/projects/ngis-skyline/locations/australia-southeast1/endpoints/2433377561942687744:predict"
         const response_data = await predictionService.makePrediction(prepared_image, model_endpoint);

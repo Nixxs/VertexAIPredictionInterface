@@ -1,4 +1,5 @@
 const { GoogleAuth } = require("google-auth-library");
+const sharp = require('sharp');
 
 async function makePrediction(input_data, model_endpoint) {
     const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);;
@@ -13,7 +14,7 @@ async function makePrediction(input_data, model_endpoint) {
         const res = await client.request({
             url: url,
             method: "POST",
-            data: input_data,
+            data: {"instances":input_data},
         });
         return(res.data);
     } catch (e) {
@@ -21,20 +22,28 @@ async function makePrediction(input_data, model_endpoint) {
     }
 }
 
-async function prepareImage(input_image) {
-    // handle image data prep here, this si the current python processing steps
-    // 1. convert the image into a grayscale array
-    // 2. resize the image to 100x100
-    // 3. reshape the image 100,100,1
+async function prepareImage(fileBuffer, imgSize = 100) {
+    return sharp(fileBuffer)
+        .resize(imgSize, imgSize) // Resize the image
+        .grayscale()             // Convert image to grayscale
+        .raw()                    // Get raw, uncompressed bitmap image data
+        .toBuffer()
+        .then(resizedImageBuffer => {
+            // Normalize the image data to range 0-1
+            const normalizedArray = Array.from(resizedImageBuffer).map(value => value / 255);
 
-    // def prepare_image(image_path):
-    //     IMG_SIZE = 100  # Assuming this is the size you used during training
-    //     img_array = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    //     resized_image = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
-    //     reshaped_image = resized_image.reshape(-1, IMG_SIZE, IMG_SIZE, 1)
-    //     return reshaped_image
-
-    return(input_image);
+            // Reshape the array into the correct 4D array format
+            const reshapedArray = [];
+            for (let i = 0; i < imgSize; i++) {
+                const row = [];
+                for (let j = 0; j < imgSize; j++) {
+                    const idx = i * imgSize + j;
+                    row.push([normalizedArray[idx]]);
+                }
+                reshapedArray.push(row);
+            }
+            return [reshapedArray]; // Ensure the shape is [1, height, width, channels]
+        });
 }
 
 module.exports = {
