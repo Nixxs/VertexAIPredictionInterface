@@ -4,7 +4,11 @@ const cors = require("cors");
 let vertexModelRoutes = require("./routes/vertexModelRoutes");
 
 const app = express();
-app.use(cors());
+
+const corsOptions = {
+  origin: '*'
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/api/models", vertexModelRoutes);
 

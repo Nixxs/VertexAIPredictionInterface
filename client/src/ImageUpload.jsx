@@ -24,14 +24,14 @@ function ImageUpload(props) {
     formData.append("image", image);
 
     try {
-      const response = await fetch("http://localhost:8080/api/models/dogcat", {
+      const response = await fetch("http://35.189.60.38/api/models/dogcat", {
         method: "POST",
         body: formData,
       });
 
       const result = await response.json();
       const prediction = result.data.predictions[0][0];
-      const predictionClass = prediction > 0.5 ? "Cat" : "Dog";
+      const predictionClass = prediction > 0.5 ? "Cat" : "Dog"
       props.onPredictionResult(predictionClass);
     } catch (error) {
       console.error("Error:", error);
